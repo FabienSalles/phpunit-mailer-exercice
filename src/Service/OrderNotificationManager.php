@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Order;
-use Symfony\Component\Mailer\MailerInterface;
+use App\Spi\Mailer\SendEmailInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment;
 
 class OrderNotificationManager
 {
     private Environment $twig;
-    private MailerInterface $mailer;
+    private SendEmailInterface $sendEmail;
     private UserService $userService;
     private ConfigService $configService;
     private InvoiceService $invoiceService;
@@ -21,7 +21,7 @@ class OrderNotificationManager
 
     public function __construct(
         Environment $twig,
-        MailerInterface $mailer,
+        SendEmailInterface $sendEmail,
         UserService $userService,
         ConfigService $configService,
         InvoiceService $invoiceService,
@@ -29,7 +29,7 @@ class OrderNotificationManager
         string $shopName,
     ) {
         $this->twig = $twig;
-        $this->mailer = $mailer;
+        $this->sendEmail = $sendEmail;
         $this->userService = $userService;
         $this->configService = $configService;
         $this->invoiceService = $invoiceService;
@@ -63,7 +63,7 @@ class OrderNotificationManager
             ->subject($subject)
             ->html($body);
 
-        $this->mailer->send($email);
+        ($this->sendEmail)($email);
     }
 
     public function sendShippingNotification(Order $order, string $trackingUrl): void
@@ -91,7 +91,7 @@ class OrderNotificationManager
             ->html($body)
             ->attach($invoice['content'], $invoice['filename'], 'application/pdf');
 
-        $this->mailer->send($email);
+        ($this->sendEmail)($email);
     }
 
     public function sendOrderReminder(Order $order): void
@@ -114,7 +114,7 @@ class OrderNotificationManager
             ->subject($subject)
             ->html($body);
 
-        $this->mailer->send($email);
+        ($this->sendEmail)($email);
     }
 
     private function buildEmailBody(string $templateName, Order $order, array $extraParams = []): string

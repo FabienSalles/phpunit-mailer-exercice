@@ -14,6 +14,6 @@ services:
         alias: app.service.invoice_service
         public: true
 
-    Symfony\Component\Mailer\MailerInterface:
-        alias: mailer
+    App\Spi\Mailer\SendEmailInterface:
+        alias: app.spi.mailer.smtp_email_sender
         public: true

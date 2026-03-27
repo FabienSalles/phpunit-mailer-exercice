@@ -10,13 +10,13 @@ use App\Entity\OrderStatus;
 use App\Service\InvoiceService;
 use App\Service\OrderNotificationManager;
 use App\Service\UserService;
-use App\Tests\StubbedMailer;
+use App\Spi\Mailer\SendEmailInterface;
+use App\Tests\StubbedEmailSender;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Spatie\Snapshots\MatchesSnapshots;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Mailer\MailerInterface;
 
 class OrderNotificationManagerTest extends KernelTestCase
 {
@@ -30,8 +30,8 @@ class OrderNotificationManagerTest extends KernelTestCase
     {
         self::bootKernel();
 
-        $stubbedMailer = new StubbedMailer();
-        self::getContainer()->set(MailerInterface::class, $stubbedMailer);
+        $emailSender = new StubbedEmailSender();
+        self::getContainer()->set(SendEmailInterface::class, $emailSender);
 
         $userService = $this->prophesize(UserService::class);
         $userService->getCustomerPreferences(Argument::any())
@@ -43,7 +43,7 @@ class OrderNotificationManagerTest extends KernelTestCase
 
         $manager->sendOrderConfirmation($order);
 
-        $emailSent = $stubbedMailer->getSentEmail();
+        $emailSent = $emailSender->getSentEmail();
 
         self::assertEquals(
             [
@@ -84,8 +84,8 @@ class OrderNotificationManagerTest extends KernelTestCase
     {
         self::bootKernel();
 
-        $stubbedMailer = new StubbedMailer();
-        self::getContainer()->set(MailerInterface::class, $stubbedMailer);
+        $emailSender = new StubbedEmailSender();
+        self::getContainer()->set(SendEmailInterface::class, $emailSender);
 
         $userService = $this->prophesize(UserService::class);
         $userService->getCustomerPreferences(Argument::any())
@@ -102,7 +102,7 @@ class OrderNotificationManagerTest extends KernelTestCase
 
         $manager->sendShippingNotification($order, $trackingUrl);
 
-        $emailSent = $stubbedMailer->getSentEmail();
+        $emailSent = $emailSender->getSentEmail();
 
         self::assertEquals(
             [
@@ -150,8 +150,8 @@ class OrderNotificationManagerTest extends KernelTestCase
     {
         self::bootKernel();
 
-        $stubbedMailer = new StubbedMailer();
-        self::getContainer()->set(MailerInterface::class, $stubbedMailer);
+        $emailSender = new StubbedEmailSender();
+        self::getContainer()->set(SendEmailInterface::class, $emailSender);
 
         $userService = $this->prophesize(UserService::class);
         $userService->getCustomerPreferences(Argument::any())
@@ -163,7 +163,7 @@ class OrderNotificationManagerTest extends KernelTestCase
 
         $manager->sendOrderReminder($order);
 
-        $emailSent = $stubbedMailer->getSentEmail();
+        $emailSent = $emailSender->getSentEmail();
 
         self::assertEquals(
             [
