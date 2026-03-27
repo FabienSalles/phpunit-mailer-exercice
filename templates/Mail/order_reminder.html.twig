@@ -1,0 +1,17 @@
+<p>Bonjour {{ order.customerFirstName }} {{ order.customerName }},</p>
+
+<p>Vous avez une commande en attente (n&deg;{{ order.orderNumber }})
+d'un montant de {{ order.totalAmount|number_format(2, ',', ' ') }} &euro;.</p>
+
+<p>N'h&eacute;sitez pas &agrave; finaliser votre achat pour en profiter au plus vite !</p>
+
+{% include 'Mail/_order_summary.html.twig' with {'order': order} %}
+
+<div style="margin: 30px 0; text-align: center;">
+    <a href="https://shop-training.com/orders/{{ order.orderNumber }}/checkout"
+       style="display: inline-block; padding: 14px 30px; background-color: #FF9800; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+        Finaliser ma commande
+    </a>
+</div>
+
+<p>&Agrave; bient&ocirc;t !<br/>L'&eacute;quipe {{ shopName }}</p>

@@ -1,0 +1,20 @@
+<p>Bonjour {{ order.customerFirstName }} {{ order.customerName }},</p>
+
+<p>Nous vous confirmons la r&eacute;ception de votre commande
+n&deg;{{ order.orderNumber }} d'un montant de
+{{ order.totalAmount|number_format(2, ',', ' ') }} &euro;.</p>
+
+{% if estimatedDelivery is defined %}
+<p>Livraison estim&eacute;e : <strong>{{ estimatedDelivery }}</strong></p>
+{% endif %}
+
+{% include 'Mail/_order_summary.html.twig' with {'order': order} %}
+
+<div style="margin: 30px 0; text-align: center;">
+    <a href="https://shop-training.com/orders/{{ order.orderNumber }}"
+       style="display: inline-block; padding: 14px 30px; background-color: #4CAF50; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+        Suivre ma commande
+    </a>
+</div>
+
+<p>Merci pour votre confiance !<br/>L'&eacute;quipe {{ shopName }}</p>

@@ -1,0 +1,40 @@
+parameters:
+    fromEmail: 'noreply@shop-training.com'
+    shopName: 'ShopTraining'
+
+services:
+    _defaults:
+        autowire: false
+        autoconfigure: false
+
+    app.service.user_service:
+        class: App\Service\UserService
+
+    app.service.config_service:
+        class: App\Service\ConfigService
+        arguments:
+            - '%kernel.project_dir%'
+
+    app.service.invoice_service:
+        class: App\Service\InvoiceService
+
+    app.service.order_notification_manager:
+        class: App\Service\OrderNotificationManager
+        arguments:
+            - '@twig'
+            - '@mailer'
+            - '@app.service.user_service'
+            - '@app.service.config_service'
+            - '@app.service.invoice_service'
+            - '@router'
+            - '%fromEmail%'
+            - '%shopName%'
+
+    App\Service\OrderNotificationManager:
+        alias: app.service.order_notification_manager
+
+    App\Service\UserService:
+        alias: app.service.user_service
+
+    App\Service\InvoiceService:
+        alias: app.service.invoice_service

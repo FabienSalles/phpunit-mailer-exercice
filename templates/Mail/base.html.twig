@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ shopName }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f4f4f7;
+        }
+        .email-wrapper {
+            width: 100%;
+            background-color: #f4f4f7;
+            padding: 30px 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .email-header {
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 24px 30px;
+            text-align: center;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .email-body {
+            padding: 30px;
+        }
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999999;
+            border-top: 1px solid #eeeeee;
+        }
+        .email-footer a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .email-footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <div class="email-header">
+                <h1>{{ shopName }}</h1>
+            </div>
+            <div class="email-body">
+                {{ body|raw }}
+            </div>
+            <div class="email-footer">
+                <p><strong>{{ shopName }}</strong> &mdash; Votre boutique en ligne de confiance</p>
+                <p>12 rue du Commerce, 75015 Paris</p>
+                <p>
+                    <a href="https://shop-training.com">Site web</a> |
+                    <a href="https://shop-training.com/contact">Contact</a> |
+                    <a href="https://shop-training.com/cgv">CGV</a>
+                </p>
+                <p style="margin-top: 15px; font-size: 11px; color: #bbbbbb;">
+                    Vous recevez cet email car vous avez pass&eacute; une commande sur {{ shopName }}.
+                    Conform&eacute;ment au RGPD, vous pouvez exercer vos droits en nous contactant.
+                </p>
+                <p style="font-size: 11px; color: #bbbbbb;">&copy; 2024 {{ shopName }}. Tous droits r&eacute;serv&eacute;s.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

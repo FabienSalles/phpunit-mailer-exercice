@@ -1,0 +1,30 @@
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+        <tr style="background-color: #f8f9fa;">
+            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Produit</th>
+            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">Quantit&eacute;</th>
+            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Prix unitaire</th>
+            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order.items %}
+        <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee;">{{ item.productName }}</td>
+            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eeeeee;">{{ item.quantity }}</td>
+            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eeeeee;">{{ item.unitPrice|number_format(2, ',', ' ') }} &euro;</td>
+            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eeeeee;">{{ item.total|number_format(2, ',', ' ') }} &euro;</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold; border-top: 2px solid #dee2e6;">Total</td>
+            <td style="padding: 10px; text-align: right; font-weight: bold; border-top: 2px solid #dee2e6;">{{ order.totalAmount|number_format(2, ',', ' ') }} &euro;</td>
+        </tr>
+    </tfoot>
+</table>
+
+<p style="color: #666666; font-size: 14px;">
+    <strong>Adresse de livraison :</strong> {{ order.shippingAddress }}
+</p>

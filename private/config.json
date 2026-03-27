@@ -1,0 +1,20 @@
+{
+    "emails": [
+        {
+            "type": "order.confirmation",
+            "subject": "Confirmation de votre commande n°__orderNumber__"
+        },
+        {
+            "type": "express_order.confirmation",
+            "subject": "Confirmation de votre commande express n°__orderNumber__"
+        },
+        {
+            "type": "order.shipping",
+            "subject": "Votre commande n°__orderNumber__ est en route, __customerFirstName__ !"
+        },
+        {
+            "type": "order.reminder",
+            "subject": "Votre panier vous attend, __customerFirstName__ !"
+        }
+    ]
+}
