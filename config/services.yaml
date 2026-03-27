@@ -31,8 +31,15 @@ services:
         arguments:
             - '@mailer'
 
+    app.spi.mailer.api_email_sender:
+        class: App\Spi\Mailer\ApiEmailSender
+        arguments:
+            - '@http_client'
+            - '%env(NOTIFICATION_API_URL)%'
+            - '%env(NOTIFICATION_API_KEY)%'
+
     App\Spi\Mailer\SendEmailInterface:
-        alias: app.spi.mailer.smtp_email_sender
+        alias: app.spi.mailer.api_email_sender
 
     app.service.order_notification_manager:
         class: App\Service\OrderNotificationManager
