@@ -7,30 +7,58 @@ namespace App\Tests\Service;
 use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\OrderStatus;
+use App\Service\InvoiceService;
+use App\Service\OrderNotificationManager;
+use App\Service\UserService;
+use App\Tests\StubbedMailer;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Spatie\Snapshots\MatchesSnapshots;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Mailer\MailerInterface;
 
 class OrderNotificationManagerTest extends KernelTestCase
 {
     use MatchesSnapshots;
+    use ProphecyTrait;
 
-    /**
-     * TODO: Implémenter ce test
-     * - Booter le kernel avec self::bootKernel()
-     * - Créer un StubbedMailer et l'injecter dans le container (remplace MailerInterface)
-     * - Stubber UserService::getCustomerPreferences via Prophecy pour renvoyer
-     *   ['locale' => 'fr', 'notifications' => true]
-     *   (sinon vrai appel HTTP vers api.customer.internal, ou notifications=false => aucun email)
-     * - Récupérer le OrderNotificationManager depuis le container
-     * - Appeler sendOrderConfirmation($order)
-     * - Vérifier from/to/subject de l'email capturé en une seule assertEquals contre une structure attendue
-     * - Vérifier le body HTML avec assertMatchesHtmlSnapshot()
-     */
+    private const FROM_EMAIL = 'noreply@shop-training.com';
+
     #[DataProvider('orderConfirmationProvider')]
     public function testSendOrderConfirmation(Order $order, string $expectedSubject): void
     {
-        $this->markTestIncomplete('TODO: Implémenter le test snapshot');
+        self::bootKernel();
+
+        $stubbedMailer = new StubbedMailer();
+        self::getContainer()->set(MailerInterface::class, $stubbedMailer);
+
+        $userService = $this->prophesize(UserService::class);
+        $userService->getCustomerPreferences(Argument::any())
+            ->willReturn(['locale' => 'fr', 'notifications' => true]);
+        self::getContainer()->set(UserService::class, $userService->reveal());
+
+        /** @var OrderNotificationManager $manager */
+        $manager = self::getContainer()->get(OrderNotificationManager::class);
+
+        $manager->sendOrderConfirmation($order);
+
+        $emailSent = $stubbedMailer->getSentEmail();
+
+        self::assertEquals(
+            [
+                'from' => self::FROM_EMAIL,
+                'to' => $order->getCustomerEmail(),
+                'subject' => $expectedSubject,
+            ],
+            [
+                'from' => $emailSent->getFrom()[0]->getAddress(),
+                'to' => $emailSent->getTo()[0]->getAddress(),
+                'subject' => $emailSent->getSubject(),
+            ],
+        );
+
+        $this->assertMatchesHtmlSnapshot($emailSent->getHtmlBody());
     }
 
     public static function orderConfirmationProvider(): \Generator
@@ -51,16 +79,47 @@ class OrderNotificationManagerTest extends KernelTestCase
         ];
     }
 
-    /**
-     * TODO: Implémenter ce test
-     * - Même pattern que testSendOrderConfirmation (stub UserService via Prophecy inclus)
-     * - Stubber InvoiceService::generateInvoicePdf via Prophecy — vrai appel HTTP vers api.billing.internal sinon
-     * - Vérifier qu'une pièce jointe est présente sur l'email
-     */
     #[DataProvider('shippingNotificationProvider')]
     public function testSendShippingNotification(Order $order, string $trackingUrl, string $expectedSubject): void
     {
-        $this->markTestIncomplete('TODO: Implémenter le test snapshot');
+        self::bootKernel();
+
+        $stubbedMailer = new StubbedMailer();
+        self::getContainer()->set(MailerInterface::class, $stubbedMailer);
+
+        $userService = $this->prophesize(UserService::class);
+        $userService->getCustomerPreferences(Argument::any())
+            ->willReturn(['locale' => 'fr', 'notifications' => true]);
+        self::getContainer()->set(UserService::class, $userService->reveal());
+
+        $invoiceService = $this->prophesize(InvoiceService::class);
+        $invoiceService->generateInvoicePdf(Argument::any())
+            ->willReturn(['filename' => 'facture_1.pdf', 'content' => 'fake-pdf-content']);
+        self::getContainer()->set(InvoiceService::class, $invoiceService->reveal());
+
+        /** @var OrderNotificationManager $manager */
+        $manager = self::getContainer()->get(OrderNotificationManager::class);
+
+        $manager->sendShippingNotification($order, $trackingUrl);
+
+        $emailSent = $stubbedMailer->getSentEmail();
+
+        self::assertEquals(
+            [
+                'from' => self::FROM_EMAIL,
+                'to' => $order->getCustomerEmail(),
+                'subject' => $expectedSubject,
+                'attachmentCount' => 1,
+            ],
+            [
+                'from' => $emailSent->getFrom()[0]->getAddress(),
+                'to' => $emailSent->getTo()[0]->getAddress(),
+                'subject' => $emailSent->getSubject(),
+                'attachmentCount' => count($emailSent->getAttachments()),
+            ],
+        );
+
+        $this->assertMatchesHtmlSnapshot($emailSent->getHtmlBody());
     }
 
     public static function shippingNotificationProvider(): \Generator
@@ -86,14 +145,40 @@ class OrderNotificationManagerTest extends KernelTestCase
         ];
     }
 
-    /**
-     * TODO: Implémenter ce test
-     * - Même pattern que testSendOrderConfirmation (stub UserService inclus)
-     */
     #[DataProvider('orderReminderProvider')]
     public function testSendOrderReminder(Order $order, string $expectedSubject): void
     {
-        $this->markTestIncomplete('TODO: Implémenter le test snapshot');
+        self::bootKernel();
+
+        $stubbedMailer = new StubbedMailer();
+        self::getContainer()->set(MailerInterface::class, $stubbedMailer);
+
+        $userService = $this->prophesize(UserService::class);
+        $userService->getCustomerPreferences(Argument::any())
+            ->willReturn(['locale' => 'fr', 'notifications' => true]);
+        self::getContainer()->set(UserService::class, $userService->reveal());
+
+        /** @var OrderNotificationManager $manager */
+        $manager = self::getContainer()->get(OrderNotificationManager::class);
+
+        $manager->sendOrderReminder($order);
+
+        $emailSent = $stubbedMailer->getSentEmail();
+
+        self::assertEquals(
+            [
+                'from' => self::FROM_EMAIL,
+                'to' => $order->getCustomerEmail(),
+                'subject' => $expectedSubject,
+            ],
+            [
+                'from' => $emailSent->getFrom()[0]->getAddress(),
+                'to' => $emailSent->getTo()[0]->getAddress(),
+                'subject' => $emailSent->getSubject(),
+            ],
+        );
+
+        $this->assertMatchesHtmlSnapshot($emailSent->getHtmlBody());
     }
 
     public static function orderReminderProvider(): \Generator
