@@ -1,0 +1,19 @@
+services:
+    _defaults:
+        public: true
+
+    App\Service\OrderNotificationManager:
+        alias: app.service.order_notification_manager
+        public: true
+
+    App\Service\UserService:
+        alias: app.service.user_service
+        public: true
+
+    App\Service\InvoiceService:
+        alias: app.service.invoice_service
+        public: true
+
+    Symfony\Component\Mailer\MailerInterface:
+        alias: mailer
+        public: true

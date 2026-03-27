@@ -7,7 +7,6 @@ namespace App\Service;
 use App\Entity\Order;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Routing\RouterInterface;
 use Twig\Environment;
 
 class OrderNotificationManager
@@ -17,7 +16,6 @@ class OrderNotificationManager
     private UserService $userService;
     private ConfigService $configService;
     private InvoiceService $invoiceService;
-    private RouterInterface $router;
     private string $fromEmail;
     private string $shopName;
 
@@ -27,22 +25,26 @@ class OrderNotificationManager
         UserService $userService,
         ConfigService $configService,
         InvoiceService $invoiceService,
-        RouterInterface $router,
         string $fromEmail,
-        string $shopName
+        string $shopName,
     ) {
         $this->twig = $twig;
         $this->mailer = $mailer;
         $this->userService = $userService;
         $this->configService = $configService;
         $this->invoiceService = $invoiceService;
-        $this->router = $router;
         $this->fromEmail = $fromEmail;
         $this->shopName = $shopName;
     }
 
     public function sendOrderConfirmation(Order $order): void
     {
+        $preferences = $this->userService->getCustomerPreferences($order->getId());
+
+        if (!$preferences['notifications']) {
+            return;
+        }
+
         $emailType = $order->isExpressDelivery()
             ? 'express_order.confirmation'
             : 'order.confirmation';
@@ -51,7 +53,7 @@ class OrderNotificationManager
             'estimatedDelivery' => $order->isExpressDelivery() ? '24h' : '3-5 jours ouvrés',
         ]);
 
-        $subject = $this->getSubjectOverride($emailType, $order)
+        $subject = $this->getSubjectOverride($emailType)
             ?? 'Confirmation de votre commande __orderNumber__';
         $this->replacePlaceholders($subject, $order);
 
@@ -66,11 +68,17 @@ class OrderNotificationManager
 
     public function sendShippingNotification(Order $order, string $trackingUrl): void
     {
+        $preferences = $this->userService->getCustomerPreferences($order->getId());
+
+        if (!$preferences['notifications']) {
+            return;
+        }
+
         $body = $this->buildEmailBody('shipping_notification', $order, [
             'trackingUrl' => $trackingUrl,
         ]);
 
-        $subject = $this->getSubjectOverride('order.shipping', $order)
+        $subject = $this->getSubjectOverride('order.shipping')
             ?? 'Votre commande __orderNumber__ a été expédiée';
         $this->replacePlaceholders($subject, $order);
 
@@ -88,9 +96,15 @@ class OrderNotificationManager
 
     public function sendOrderReminder(Order $order): void
     {
+        $preferences = $this->userService->getCustomerPreferences($order->getId());
+
+        if (!$preferences['notifications']) {
+            return;
+        }
+
         $body = $this->buildEmailBody('order_reminder', $order);
 
-        $subject = $this->getSubjectOverride('order.reminder', $order)
+        $subject = $this->getSubjectOverride('order.reminder')
             ?? 'N\'oubliez pas votre commande __orderNumber__';
         $this->replacePlaceholders($subject, $order);
 
@@ -116,9 +130,9 @@ class OrderNotificationManager
         ]);
     }
 
-    private function getSubjectOverride(string $emailType, Order $order): ?string
+    private function getSubjectOverride(string $emailType): ?string
     {
-        $config = $this->configService->getEmailConfig($emailType, $order->getStoreCode());
+        $config = $this->configService->getEmailConfig($emailType);
 
         if (empty($config['subject'])) {
             return null;

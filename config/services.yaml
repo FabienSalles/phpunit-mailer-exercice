@@ -9,6 +9,10 @@ services:
 
     app.service.user_service:
         class: App\Service\UserService
+        arguments:
+            - '@http_client'
+            - '%env(CUSTOMER_API_URL)%'
+            - '%env(CUSTOMER_API_KEY)%'
 
     app.service.config_service:
         class: App\Service\ConfigService
@@ -17,6 +21,10 @@ services:
 
     app.service.invoice_service:
         class: App\Service\InvoiceService
+        arguments:
+            - '@http_client'
+            - '%env(BILLING_API_URL)%'
+            - '%env(BILLING_API_KEY)%'
 
     app.service.order_notification_manager:
         class: App\Service\OrderNotificationManager
@@ -26,7 +34,6 @@ services:
             - '@app.service.user_service'
             - '@app.service.config_service'
             - '@app.service.invoice_service'
-            - '@router'
             - '%fromEmail%'
             - '%shopName%'
 

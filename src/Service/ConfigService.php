@@ -16,7 +16,7 @@ class ConfigService
     /**
      * @return array<string, mixed>
      */
-    public function getEmailConfig(string $emailType, string $storeCode): array
+    public function getEmailConfig(string $emailType): array
     {
         $configFile = $this->projectDir . '/private/config.json';
 
