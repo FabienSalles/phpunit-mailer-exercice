@@ -26,11 +26,19 @@ services:
             - '%env(BILLING_API_URL)%'
             - '%env(BILLING_API_KEY)%'
 
+    app.spi.mailer.smtp_email_sender:
+        class: App\Spi\Mailer\SmtpEmailSender
+        arguments:
+            - '@mailer'
+
+    App\Spi\Mailer\SendEmailInterface:
+        alias: app.spi.mailer.smtp_email_sender
+
     app.service.order_notification_manager:
         class: App\Service\OrderNotificationManager
         arguments:
             - '@twig'
-            - '@mailer'
+            - '@App\Spi\Mailer\SendEmailInterface'
             - '@app.service.user_service'
             - '@app.service.config_service'
             - '@app.service.invoice_service'
