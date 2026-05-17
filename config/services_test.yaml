@@ -15,5 +15,5 @@ services:
         public: true
 
     App\Spi\Mailer\SendEmailInterface:
-        alias: app.spi.mailer.smtp_email_sender
+        alias: app.spi.mailer.api_email_sender
         public: true
